@@ -6,6 +6,7 @@ object AwsSdkScalaWrapperBuild extends Build {
   val baseSettings = Seq(
     organization := "com.gu",
     scalaVersion := "2.11.2",
+    version := "0.1-SNAPSHOT",
     libraryDependencies += awsJavaSdk
   )
 
@@ -13,7 +14,7 @@ object AwsSdkScalaWrapperBuild extends Build {
     id = "code-generation",
     base = file("code-generation"),
     settings = baseSettings ++ Seq(
-      name := "aws-sdk-scala-wrapper-macro",
+      name := "aws-sdk-scala-wrappers-macro",
       libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
     )
   )
@@ -22,7 +23,7 @@ object AwsSdkScalaWrapperBuild extends Build {
     id = "instances",
     base = file("instances"),
     settings = baseSettings ++ Seq(
-      name := "aws-sdk-scala-wrapper"
+      name := "aws-sdk-scala-wrappers"
     )
   ).dependsOn(generator)
 

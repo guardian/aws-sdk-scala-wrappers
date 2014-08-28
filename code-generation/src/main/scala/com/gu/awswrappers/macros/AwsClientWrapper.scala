@@ -5,8 +5,10 @@ import com.amazonaws.handlers.AsyncHandler
 import scala.language.experimental.macros
 import scala.reflect.macros._
 
+trait AwsClientWrapper
+
 object AwsClientWrapper {
-  def wrapImpl[A: c.WeakTypeTag](c: whitebox.Context)(a: c.Expr[A]): c.Expr[Any] = {
+  def wrapImpl[A: c.WeakTypeTag](c: whitebox.Context)(a: c.Expr[A]): c.Expr[AwsClientWrapper] = {
     import c.universe._
 
     val className = TermName(c.freshName())
@@ -49,14 +51,12 @@ object AwsClientWrapper {
       val abba = q"""
         val $className = $a
 
-        new {
+        new com.gu.awswrappers.macros.AwsClientWrapper {
           ..$generatedMethods
         }
       """
 
-      println(abba)
-
-      c.Expr(abba)
+      c.Expr[AwsClientWrapper](abba)
     }
   }
 
