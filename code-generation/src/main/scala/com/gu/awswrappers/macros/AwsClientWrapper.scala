@@ -20,7 +20,7 @@ object AwsClientWrapper {
       if paramList.lastOption.exists(_.typeSignature <:< c.typeOf[AsyncHandler[_, _]])
     } yield {
       val methodName = method.name.decodedName
-      val futureMethodName = TermName(methodName + "Future")
+      val futureMethodName = TermName(methodName.toString.stripSuffix("Async") + "Future")
       val params = paramList.init
       val handlerParam = paramList.last
 
