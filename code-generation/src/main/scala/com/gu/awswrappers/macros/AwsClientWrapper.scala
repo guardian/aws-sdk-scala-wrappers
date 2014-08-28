@@ -6,17 +6,16 @@ import scala.language.experimental.macros
 import scala.reflect.macros._
 
 object AwsClientWrapper {
-  def wrapImpl[A: c.WeakTypeTag](c: whitebox.Context)(a: c.Expr[A]): c.Expr[Object] = {
+  def wrapImpl[A: c.WeakTypeTag](c: whitebox.Context)(a: c.Expr[A]): c.Expr[Any] = {
     import c.universe._
 
     val className = TermName(c.freshName())
-
     val typ = weakTypeOf[A]
 
     val generatedMethods = for {
       method <- typ.members.filter(_.isMethod).map(_.asMethod)
       paramList <- method.paramLists
-      if paramList.lastOption.exists(_.typeSignature =:= c.typeOf[AsyncHandler[_, _]])
+      if paramList.lastOption.exists(_.typeSignature <:< c.typeOf[AsyncHandler[_, _]])
     } yield {
       val methodName = method.name.decodedName
       val futureMethodName = TermName(methodName + "Future")
@@ -36,27 +35,28 @@ object AwsClientWrapper {
       val methodTermName = TermName(methodName.toString)
 
       q"""
-        def $futureMethodName($futureMethodParams) {
-          val (future, handler) = com.gu.awswrappers.Handlers.createHandler[$requestType, $resultType]()
-          $className.$methodTermName(..$paramNames, handler)
-          future
+        def $futureMethodName(..$futureMethodParams): scala.concurrent.Future[$resultType] = {
+          val pair = com.gu.awswrappers.Handlers.createHandler[$requestType, $resultType]()
+          $className.$methodTermName(..$paramNames, pair._2)
+          pair._1
         }
       """
     }
 
     if (generatedMethods.isEmpty) {
-      c.abort(c.enclosingPosition, s"${a.actualType.getClass.getName} does not have any methods that " +
-        "take an AsyncHandler as a parameter.")
+      c.abort(c.enclosingPosition, s"$typ does not have any methods that take an AsyncHandler as a parameter.")
     } else {
-      c.Expr[Object](q"""
-        {
-          val $className = $a
+      val abba = q"""
+        val $className = $a
 
-          new {
-            ..$generatedMethods
-          }
+        new {
+          ..$generatedMethods
         }
-      """)
+      """
+
+      println(abba)
+
+      c.Expr(abba)
     }
   }
 
