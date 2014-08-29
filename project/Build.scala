@@ -59,7 +59,7 @@ object AwsSdkScalaWrapperBuild extends Build {
     base = file("code-generation"),
     settings = baseSettings ++ Seq(
       name := "aws-sdk-scala-wrappers-macro"
-    )
+    ) ++ publishSettings
   )
 
   val instances = Project(
