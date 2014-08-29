@@ -1,4 +1,4 @@
-package com.gu.awswrappers
+package com.gu.awswrappers.utils
 
 import com.amazonaws.handlers.AsyncHandler
 

@@ -5,10 +5,8 @@ import com.amazonaws.handlers.AsyncHandler
 import scala.language.experimental.macros
 import scala.reflect.macros._
 
-trait AwsClientWrapper
-
 object AwsClientWrapper {
-  def wrapImpl[A: c.WeakTypeTag](c: whitebox.Context)(a: c.Expr[A]): c.Expr[AwsClientWrapper] = {
+  def wrapImpl[A: c.WeakTypeTag](c: whitebox.Context)(a: c.Expr[A]): c.Expr[Any] = {
     import c.universe._
 
     val className = TermName(c.freshName())
@@ -38,7 +36,7 @@ object AwsClientWrapper {
 
       q"""
         def $futureMethodName(..$futureMethodParams): scala.concurrent.Future[$resultType] = {
-          val pair = com.gu.awswrappers.Handlers.createHandler[$requestType, $resultType]()
+          val pair = com.gu.awswrappers.utils.Handlers.createHandler[$requestType, $resultType]()
           $className.$methodTermName(..$paramNames, pair._2)
           pair._1
         }
@@ -51,12 +49,12 @@ object AwsClientWrapper {
       val abba = q"""
         val $className = $a
 
-        new com.gu.awswrappers.macros.AwsClientWrapper {
+        new {
           ..$generatedMethods
         }
       """
 
-      c.Expr[AwsClientWrapper](abba)
+      c.Expr[Any](abba)
     }
   }
 
