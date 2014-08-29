@@ -46,15 +46,13 @@ object AwsClientWrapper {
     if (generatedMethods.isEmpty) {
       c.abort(c.enclosingPosition, s"$typ does not have any methods that take an AsyncHandler as a parameter.")
     } else {
-      val abba = q"""
+      c.Expr[Any](q"""
         val $className = $a
 
         new {
           ..$generatedMethods
         }
-      """
-
-      c.Expr[Any](abba)
+      """)
     }
   }
 
